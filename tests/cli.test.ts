@@ -19,7 +19,9 @@ test("CLI writes markdown and json outputs", async () => {
 });
 
 test("CLI returns 2 when fail-on threshold trips", async () => {
-  const code = await quietStderrMain(["audit", "examples/agent-session.log", "--fail-on", "secret"]);
+  const dir = await mkdtemp(path.join(tmpdir(), "logveil-test-"));
+  const out = path.join(dir, "audit.json");
+  const code = await quietStderrMain(["audit", "examples/agent-session.log", "--out", out, "--fail-on", "secret"]);
   assert.equal(code, 2);
 });
 
