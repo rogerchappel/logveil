@@ -1,0 +1,13 @@
+{
+  "name": "logveil",
+  "version": 1,
+  "commands": {
+    "redactMarkdown": "logveil redact examples/agent-session.log --out repro-safe.md --json-out evidence.json",
+    "auditJson": "logveil audit examples/agent-session.log --format json",
+    "ciGate": "logveil audit examples/agent-session.log --format json --fail-on secret"
+  },
+  "inputs": [".log", ".txt", ".md", ".json", ".jsonl", ".out", ".ansi"],
+  "outputs": ["markdown", "json"],
+  "network": "disabled-by-design",
+  "exitCodes": { "success": 0, "error": 1, "gateFailed": 2 }
+}
