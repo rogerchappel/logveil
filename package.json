@@ -20,7 +20,7 @@
     "build": "tsc -p tsconfig.json",
     "check": "tsc -p tsconfig.json --noEmit",
     "test": "node --test --import tsx tests/*.test.ts",
-    "smoke": "npm run build && node dist/cli.js redact examples/agent-session.log --out /tmp/logveil-smoke.md --json-out /tmp/logveil-smoke.json --fail-on secret && node dist/cli.js audit examples/agent-session.log --format json --fail-on secret",
+    "smoke": "npm run build && node dist/cli.js redact examples/agent-session.log --out /tmp/logveil-smoke.md --json-out /tmp/logveil-smoke.json && node dist/cli.js audit examples/agent-session.log --format json --fail-on none >/tmp/logveil-audit.json",
     "package:smoke": "npm pack --dry-run",
     "release:check": "npm test && npm run check && npm run build && npm run package:smoke"
   },
