@@ -9,7 +9,7 @@ test("CLI writes markdown and json outputs", async () => {
   const dir = await mkdtemp(path.join(tmpdir(), "logveil-test-"));
   const md = path.join(dir, "bundle.md");
   const json = path.join(dir, "bundle.json");
-  const code = await quietMain(["redact", "examples/agent-session.log", "--out", md, "--json-out", json]);
+  const code = await main(["redact", "examples/agent-session.log", "--out", md, "--json-out", json]);
   assert.equal(code, 0);
   const markdown = await readFile(md, "utf8");
   const parsed = JSON.parse(await readFile(json, "utf8"));
@@ -19,19 +19,16 @@ test("CLI writes markdown and json outputs", async () => {
 });
 
 test("CLI returns 2 when fail-on threshold trips", async () => {
-  const code = await quietMain(["audit", "examples/agent-session.log", "--fail-on", "secret"]);
+  const code = await quietStderrMain(["audit", "examples/agent-session.log", "--fail-on", "secret"]);
   assert.equal(code, 2);
 });
 
-async function quietMain(args: string[]): Promise<number> {
-  const stdout = process.stdout.write;
+async function quietStderrMain(args: string[]): Promise<number> {
   const stderr = process.stderr.write;
-  process.stdout.write = (() => true) as typeof process.stdout.write;
   process.stderr.write = (() => true) as typeof process.stderr.write;
   try {
     return await main(args);
   } finally {
-    process.stdout.write = stdout;
     process.stderr.write = stderr;
   }
 }
