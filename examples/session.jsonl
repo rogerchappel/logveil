@@ -1,0 +1,2 @@
+{"role":"tool","content":"cwd=/Users/roger/Developer/my-opensource/logveil token=local-dev-token-12345"}
+{"role":"assistant","content":"Build failed in /Users/roger/tmp/worktree"}
