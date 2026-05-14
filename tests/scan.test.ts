@@ -22,3 +22,11 @@ test("buildBundle summaries are deterministic", () => {
   assert.equal(bundle.summary.secrets, 1);
   assert.equal(bundle.summary.warnings, 2);
 });
+
+
+test("scanDocument redacts Slack-style chat tokens", () => {
+  const file = scanDocument({ path: "chat.log", content: "bot token xoxb-123456789012-ABCDEFGHIJKL-secretvalue\n" });
+  assert.equal(file.findings.length, 1);
+  assert.match(file.sanitized, /\[REDACTED:SLACK_TOKEN_1\]/);
+  assert.doesNotMatch(file.sanitized, /xoxb-/);
+});

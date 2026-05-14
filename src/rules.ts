@@ -21,6 +21,14 @@ export const defaultRules: RedactionRule[] = [
     replacement: indexed("GITHUB_TOKEN")
   },
   {
+    id: "slack-token",
+    type: "token",
+    severity: "secret",
+    description: "Slack bot/user/app token",
+    pattern: /xox[baprs]-[A-Za-z0-9-]{20,}/g,
+    replacement: indexed("SLACK_TOKEN")
+  },
+  {
     id: "aws-access-key",
     type: "aws_access_key",
     severity: "secret",
