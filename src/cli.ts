@@ -52,7 +52,12 @@ export async function main(argv = process.argv.slice(2)): Promise<number> {
 
 function parseArgs(argv: string[]): CliOptions {
   const [commandRaw, ...rest] = argv;
-  const command = (commandRaw ?? "help") as CliOptions["command"];
+  const normalizedCommand = commandRaw === "--help" || commandRaw === "-h"
+    ? "help"
+    : commandRaw === "--version" || commandRaw === "-v"
+      ? "version"
+      : commandRaw;
+  const command = (normalizedCommand ?? "help") as CliOptions["command"];
   if (!["redact", "audit", "help", "version"].includes(command)) throw new Error(`Unknown command: ${commandRaw}`);
   const options: CliOptions = { command, inputs: [], format: command === "audit" ? "json" : "markdown", redact: true };
   for (let i = 0; i < rest.length; i += 1) {
