@@ -43,6 +43,13 @@ logveil audit ./session.log --format json
 logveil audit ./session.log --format markdown
 ```
 
+For a fixture-backed gate demo that captures the expected `--fail-on secret`
+exit code and evidence files:
+
+```bash
+bash demo/fail-on-gate.sh
+```
+
 ## Gates
 
 `--fail-on` exits with code `2` when findings at or above the selected severity exist.
