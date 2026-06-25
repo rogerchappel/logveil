@@ -9,6 +9,8 @@ Grounded facts for short posts about LogVeil:
 - `audit --fail-on secret` returns exit code `2` when the configured threshold
   is met.
 - Source files are read-only; LogVeil writes only requested outputs.
+- `demo/sanitize-chat-export.sh` combines Markdown chat exports and JSONL
+  transcripts into one redacted bundle.
 
 ## Hooks
 
@@ -22,5 +24,5 @@ Grounded facts for short posts about LogVeil:
 2. Run `node dist/cli.js redact examples/agent-session.log --out repro-safe.md --json-out redaction-evidence.json`.
 3. Open the Markdown bundle and point out masked evidence.
 4. Run `node dist/cli.js audit examples/agent-session.log --format json --fail-on secret`.
-5. Explain that an exit code of `2` means the configured finding threshold was met.
-
+5. Run `bash demo/sanitize-chat-export.sh` to show a multi-input bundle.
+6. Explain that an exit code of `2` means the configured finding threshold was met.

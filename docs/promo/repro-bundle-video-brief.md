@@ -11,7 +11,8 @@ but it also contains paths, email addresses, or token-shaped strings.
 2. Run `bash demo/sanitize-repro-bundle.sh`.
 3. Open `/tmp/logveil-demo/repro-safe.md` and show masked values.
 4. Open `/tmp/logveil-demo/audit.json` to show automation-friendly findings.
-5. Mention that source files are never mutated.
+5. Run `bash demo/sanitize-chat-export.sh` to show Markdown and JSONL inputs combined into one bundle.
+6. Mention that source files are never mutated.
 
 ## What to say plainly
 
