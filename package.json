@@ -12,6 +12,8 @@
   },
   "files": [
     "dist",
+    "demo",
+    "docs",
     "examples",
     "README.md",
     "LICENSE",

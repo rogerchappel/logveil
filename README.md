@@ -16,6 +16,13 @@ node dist/cli.js audit examples/agent-session.log --format json
 For a fuller fixture-backed walkthrough, see
 [docs/tutorials/sanitize-agent-session.md](docs/tutorials/sanitize-agent-session.md).
 
+Runnable demos:
+
+```bash
+bash demo/sanitize-repro-bundle.sh
+bash demo/sanitize-chat-export.sh
+```
+
 After package installation, use the binary directly:
 
 ```bash
@@ -85,6 +92,8 @@ npm test
 npm run check
 npm run build
 npm run smoke
+bash demo/sanitize-repro-bundle.sh
+bash demo/sanitize-chat-export.sh
 bash scripts/validate.sh
 ```
 
