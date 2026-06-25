@@ -26,3 +26,5 @@ The generated files are written under `/tmp/logveil-demo`:
 Before publishing a repro bundle, check that the Markdown output has the
 expected context, verify that sensitive values are masked, and keep the original
 log private.
+
+For a multi-input chat transcript example, see [Sanitize a Chat Export and JSONL Session](sanitize-chat-export.md).

@@ -18,6 +18,13 @@ For a fuller fixture-backed walkthrough, see
 For a gate-oriented recipe, see
 [docs/tutorials/audit-before-sharing.md](docs/tutorials/audit-before-sharing.md).
 
+Runnable demos:
+
+```bash
+bash demo/sanitize-repro-bundle.sh
+bash demo/sanitize-chat-export.sh
+```
+
 After package installation, use the binary directly:
 
 ```bash
@@ -94,6 +101,8 @@ npm test
 npm run check
 npm run build
 npm run smoke
+bash demo/sanitize-repro-bundle.sh
+bash demo/sanitize-chat-export.sh
 bash scripts/validate.sh
 ```
 
