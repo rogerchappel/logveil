@@ -117,4 +117,6 @@ npm run release:check
 npm pack --dry-run
 ```
 
-The package smoke keeps the published tarball contents visible before tagging or publishing.
+The package smoke installs the generated tarball into a temporary app, runs the
+installed `logveil` binary, and confirms the packaged examples can produce both
+Markdown and JSON evidence before tagging or publishing.

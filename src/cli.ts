@@ -1,4 +1,6 @@
 #!/usr/bin/env node
+import { realpathSync } from "node:fs";
+import { fileURLToPath } from "node:url";
 import { collectInputs, writeIfRequested } from "./io.js";
 import { buildBundle } from "./scan.js";
 import { gateFailures, parseFailOn } from "./gates.js";
@@ -90,6 +92,6 @@ function helpText(): string {
   return `LogVeil - sanitize agent logs into safe repro bundles\n\nUsage:\n  logveil redact <file|dir...> [--out repro-safe.md] [--json-out evidence.json] [--fail-on secret]\n  logveil audit <file|dir...> [--format json|markdown] [--fail-on warning]\n\nDefaults:\n  --redact is enabled by default. Outputs are deterministic and local-only.\n  --fail-on accepts none, info, warning, secret.\n`;
 }
 
-if (import.meta.url === `file://${process.argv[1]}`) {
+if (process.argv[1] && realpathSync(process.argv[1]) === fileURLToPath(import.meta.url)) {
   process.exitCode = await main();
 }
