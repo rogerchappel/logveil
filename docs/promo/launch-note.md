@@ -16,7 +16,8 @@ bash demo/sanitize-repro-bundle.sh
 ```
 
 The demo uses committed fixtures under `examples/` and writes sanitized output
-under `demo/output/`.
+under `demo/output/`. The same flow can be adapted to `/tmp/logveil-demo` when
+you want a disposable local capture.
 
 ## Useful proof points
 
