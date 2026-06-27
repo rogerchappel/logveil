@@ -15,6 +15,8 @@ node dist/cli.js audit examples/agent-session.log --format json
 
 For a fuller fixture-backed walkthrough, see
 [docs/tutorials/sanitize-agent-session.md](docs/tutorials/sanitize-agent-session.md).
+Promotion-ready launch notes and short post drafts live under
+[`docs/promo/`](docs/promo/).
 For a gate-oriented recipe, see
 [docs/tutorials/audit-before-sharing.md](docs/tutorials/audit-before-sharing.md).
 

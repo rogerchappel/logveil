@@ -1,27 +1,35 @@
-# Launch Note Draft
+# LogVeil launch note draft
 
 LogVeil turns agent logs, terminal captures, JSONL transcripts, and chat exports
-into safer repro bundles that can be reviewed before sharing.
+into local repro bundles that are safer to review or share.
 
-It is built for local incident and support workflows where the source log may
-contain useful evidence alongside paths, emails, tokens, private IPs, or
-secret-looking key/value pairs.
+It is designed for post-failure debugging: keep the useful timeline and command
+evidence, mask common secrets and private identifiers, and produce deterministic
+Markdown and JSON outputs for a PR, issue, or incident note.
 
 ## Demo
 
 ```sh
+npm install
+npm run build
 bash demo/sanitize-repro-bundle.sh
 ```
 
-The demo builds the CLI, redacts `examples/agent-session.log`, writes a Markdown
-bundle, writes JSON evidence, and runs an audit report under `/tmp/logveil-demo`.
+The demo uses committed fixtures under `examples/` and writes sanitized output
+under `demo/output/`. The same flow can be adapted to `/tmp/logveil-demo` when
+you want a disposable local capture.
 
-## Positioning
+## Useful proof points
 
-LogVeil is useful when maintainers need to share enough failure context for a
-repro without publishing the raw session log.
+- Local-first: no telemetry, SaaS calls, or hidden network access.
+- Source logs are never mutated.
+- Reports use stable timestamps for cleaner diffs.
+- Redaction covers common API keys, GitHub tokens, AWS access key IDs,
+  secret-looking assignments, emails, home paths, and private IPv4 addresses.
+- `audit --fail-on` can turn findings into a CI gate without writing a bundle.
 
-## Limitations
+## Limits to say plainly
 
-LogVeil is an MVP redaction aid, not a complete DLP system. Review sanitized
-bundles before publishing them, and keep original logs private.
+LogVeil is an MVP sanitizer, not a complete DLP system. Review sanitized
+bundles before publishing them, especially when logs may contain proprietary
+prompts, screenshots, binary captures, or domain-specific secrets.

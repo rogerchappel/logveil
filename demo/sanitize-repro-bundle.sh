@@ -2,7 +2,7 @@
 set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-OUT_DIR="${TMPDIR:-/tmp}/logveil-demo"
+OUT_DIR="${ROOT_DIR}/demo/output"
 MARKDOWN_OUT="$OUT_DIR/repro-safe.md"
 JSON_OUT="$OUT_DIR/evidence.json"
 AUDIT_OUT="$OUT_DIR/audit.json"

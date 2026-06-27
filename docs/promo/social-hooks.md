@@ -26,3 +26,6 @@ Grounded facts for short posts about LogVeil:
 4. Run `node dist/cli.js audit examples/agent-session.log --format json --fail-on secret`.
 5. Run `bash demo/sanitize-chat-export.sh` to show a multi-input bundle.
 6. Explain that an exit code of `2` means the configured finding threshold was met.
+
+For a longer announcement draft, pair the clip with
+[`launch-note.md`](launch-note.md).
