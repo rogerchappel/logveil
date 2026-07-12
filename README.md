@@ -25,7 +25,11 @@ Runnable demos:
 ```bash
 bash demo/sanitize-repro-bundle.sh
 bash demo/sanitize-chat-export.sh
+bash demo/sanitize-support-ticket.sh
 ```
+
+The support-ticket demo uses a synthetic incident fixture and is documented in
+[docs/tutorials/sanitize-support-ticket.md](docs/tutorials/sanitize-support-ticket.md).
 
 After package installation, use the binary directly:
 
