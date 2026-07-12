@@ -91,6 +91,16 @@ LogVeil detects common high-signal patterns:
 - email addresses
 - Unix home-directory paths
 - private IPv4 addresses
+## CLI Help Smoke
+
+Confirm the packaged command starts and prints its help text before relying on a release tarball or downstream automation:
+
+```bash
+npm run build
+node ./dist/cli.js --help
+```
+
+The command should exit successfully, print the available options, and avoid reading project files or contacting external services.
 
 ## Limitations
 
