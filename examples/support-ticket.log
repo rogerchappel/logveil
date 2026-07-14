@@ -1,0 +1,7 @@
+2026-07-12T02:14:08Z support-ticket opened by alex@example.com
+cwd=/Users/alex/projects/checkout-service
+command: node scripts/retry-webhook.js --ticket INC-1042
+env: API_TOKEN=sk-support-demo-1234567890abcdef
+note: staging callback reached http://10.24.8.15/internal/retry
+result: webhook replay failed with status=500
+next: attach sanitized repro bundle to the maintainer issue

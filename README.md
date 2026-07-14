@@ -17,6 +17,21 @@ For a fuller fixture-backed walkthrough, see
 [docs/tutorials/sanitize-agent-session.md](docs/tutorials/sanitize-agent-session.md).
 For a multi-file demo across log, JSONL, and Markdown chat export fixtures, see
 [docs/tutorials/multi-format-agent-capture.md](docs/tutorials/multi-format-agent-capture.md).
+Promotion-ready launch notes and short post drafts live under
+[`docs/promo/`](docs/promo/).
+For a gate-oriented recipe, see
+[docs/tutorials/audit-before-sharing.md](docs/tutorials/audit-before-sharing.md).
+
+Runnable demos:
+
+```bash
+bash demo/sanitize-repro-bundle.sh
+bash demo/sanitize-chat-export.sh
+bash demo/sanitize-support-ticket.sh
+```
+
+The support-ticket demo uses a synthetic incident fixture and is documented in
+[docs/tutorials/sanitize-support-ticket.md](docs/tutorials/sanitize-support-ticket.md).
 
 After package installation, use the binary directly:
 
@@ -43,6 +58,13 @@ Produces JSON by default for automation.
 ```bash
 logveil audit ./session.log --format json
 logveil audit ./session.log --format markdown
+```
+
+For a fixture-backed gate demo that captures the expected `--fail-on secret`
+exit code and evidence files:
+
+```bash
+bash demo/fail-on-gate.sh
 ```
 
 ## Gates
@@ -75,6 +97,16 @@ LogVeil detects common high-signal patterns:
 - email addresses
 - Unix home-directory paths
 - private IPv4 addresses
+## CLI Help Smoke
+
+Confirm the packaged command starts and prints its help text before relying on a release tarball or downstream automation:
+
+```bash
+npm run build
+node ./dist/cli.js --help
+```
+
+The command should exit successfully, print the available options, and avoid reading project files or contacting external services.
 
 ## Limitations
 
@@ -87,6 +119,8 @@ npm test
 npm run check
 npm run build
 npm run smoke
+bash demo/sanitize-repro-bundle.sh
+bash demo/sanitize-chat-export.sh
 bash scripts/validate.sh
 ```
 
@@ -100,3 +134,16 @@ The smoke script uses checked-in fixtures under `examples/`.
   log, JSONL, and chat-export bundle under `/tmp/logveil-multi-format-demo`.
 - [Multi-format video brief](docs/promo/multi-format-video-brief.md) outlines a
   grounded short clip using checked-in fixtures.
+
+## Release readiness
+
+Before opening a release PR, run the same checks that CI runs:
+
+```sh
+npm run release:check
+npm pack --dry-run
+```
+
+The package smoke installs the generated tarball into a temporary app, runs the
+installed `logveil` binary, and confirms the packaged examples can produce both
+Markdown and JSON evidence before tagging or publishing.
