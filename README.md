@@ -15,6 +15,8 @@ node dist/cli.js audit examples/agent-session.log --format json
 
 For a fuller fixture-backed walkthrough, see
 [docs/tutorials/sanitize-agent-session.md](docs/tutorials/sanitize-agent-session.md).
+For a multi-file demo across log, JSONL, and Markdown chat export fixtures, see
+[docs/tutorials/multi-format-agent-capture.md](docs/tutorials/multi-format-agent-capture.md).
 
 After package installation, use the binary directly:
 
@@ -89,3 +91,12 @@ bash scripts/validate.sh
 ```
 
 The smoke script uses checked-in fixtures under `examples/`.
+
+## Demo and promotion assets
+
+- `bash demo/sanitize-repro-bundle.sh` builds the CLI and writes a single-log
+  repro bundle under `/tmp/logveil-demo`.
+- `bash demo/multi-format-capture.sh` builds the CLI and writes a combined
+  log, JSONL, and chat-export bundle under `/tmp/logveil-multi-format-demo`.
+- [Multi-format video brief](docs/promo/multi-format-video-brief.md) outlines a
+  grounded short clip using checked-in fixtures.
