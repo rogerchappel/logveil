@@ -1,6 +1,6 @@
 import { promises as fs } from "node:fs";
 import path from "node:path";
-import type { InputDocument } from "./types.js";
+import type { InputDocument, ReproBundle } from "./types.js";
 
 const SUPPORTED = new Set([".txt", ".log", ".md", ".json", ".jsonl", ".out", ".ansi"]);
 
@@ -38,4 +38,43 @@ export async function writeIfRequested(destination: string | undefined, content:
   if (!destination) return;
   await fs.mkdir(path.dirname(path.resolve(destination)), { recursive: true });
   await fs.writeFile(destination, content, "utf8");
+}
+
+export interface SanitizedWrite {
+  source: string;
+  destination: string;
+  findings: number;
+  sha256: string;
+}
+
+export async function writeSanitizedCopies(bundle: ReproBundle, outDir: string): Promise<SanitizedWrite[]> {
+  const root = path.resolve(outDir);
+  const writes: SanitizedWrite[] = [];
+
+  for (const file of bundle.files) {
+    const destination = path.join(root, redactedPath(file.path));
+    await fs.mkdir(path.dirname(destination), { recursive: true });
+    await fs.writeFile(destination, file.sanitized, "utf8");
+    writes.push({
+      source: file.path,
+      destination: path.relative(process.cwd(), destination),
+      findings: file.findings.length,
+      sha256: file.sha256
+    });
+  }
+
+  await fs.writeFile(
+    path.join(root, "logveil-write-manifest.json"),
+    `${JSON.stringify({ generatedBy: bundle.generatedBy, files: writes }, null, 2)}\n`,
+    "utf8"
+  );
+  return writes;
+}
+
+function redactedPath(inputPath: string): string {
+  const normalized = inputPath.split(path.sep).filter((part) => part && part !== "..");
+  const basename = normalized.pop() ?? "input.txt";
+  const extension = path.extname(basename);
+  const stem = extension ? basename.slice(0, -extension.length) : basename;
+  return path.join(...normalized, `${stem}.redacted${extension || ".txt"}`);
 }
