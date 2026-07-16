@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 import { realpathSync } from "node:fs";
 import { fileURLToPath } from "node:url";
-import { collectInputs, writeIfRequested } from "./io.js";
+import { collectInputs, writeIfRequested, writeSanitizedCopies } from "./io.js";
 import { buildBundle } from "./scan.js";
 import { gateFailures, parseFailOn } from "./gates.js";
 import { renderJson, renderMarkdown } from "./render.js";
@@ -11,9 +11,11 @@ interface CliOptions {
   command: "redact" | "audit" | "help" | "version";
   inputs: string[];
   out?: string;
+  outDir?: string;
   jsonOut?: string;
   format: OutputFormat;
   redact: boolean;
+  write: boolean;
   failOn?: string;
 }
 
@@ -37,6 +39,11 @@ export async function main(argv = process.argv.slice(2)): Promise<number> {
 
     await writeIfRequested(options.out, output);
     if (options.jsonOut) await writeIfRequested(options.jsonOut, renderJson(bundle));
+    if (options.write) {
+      if (!options.outDir) throw new Error("--write requires --out-dir so sanitized copies have an explicit destination.");
+      const writes = await writeSanitizedCopies(bundle, options.outDir);
+      process.stderr.write(`logveil wrote ${writes.length} sanitized file(s) to ${options.outDir}\n`);
+    }
     if (!options.out) process.stdout.write(output);
 
     const failures = gateFailures(bundle, parseFailOn(options.failOn));
@@ -61,13 +68,15 @@ function parseArgs(argv: string[]): CliOptions {
       : commandRaw;
   const command = (normalizedCommand ?? "help") as CliOptions["command"];
   if (!["redact", "audit", "help", "version"].includes(command)) throw new Error(`Unknown command: ${commandRaw}`);
-  const options: CliOptions = { command, inputs: [], format: command === "audit" ? "json" : "markdown", redact: true };
+  const options: CliOptions = { command, inputs: [], format: command === "audit" ? "json" : "markdown", redact: true, write: false };
   for (let i = 0; i < rest.length; i += 1) {
     const arg = rest[i];
     if (arg === "--out") options.out = requireValue(rest, ++i, arg);
+    else if (arg === "--out-dir") options.outDir = requireValue(rest, ++i, arg);
     else if (arg === "--json-out") options.jsonOut = requireValue(rest, ++i, arg);
     else if (arg === "--format") options.format = parseFormat(requireValue(rest, ++i, arg));
     else if (arg === "--fail-on") options.failOn = requireValue(rest, ++i, arg);
+    else if (arg === "--write") options.write = true;
     else if (arg === "--no-redact") options.redact = false;
     else if (arg === "--redact") options.redact = true;
     else if (arg === "--help" || arg === "-h") options.command = "help";
@@ -89,7 +98,7 @@ function parseFormat(value: string): OutputFormat {
 }
 
 function helpText(): string {
-  return `LogVeil - sanitize agent logs into safe repro bundles\n\nUsage:\n  logveil redact <file|dir...> [--out repro-safe.md] [--json-out evidence.json] [--fail-on secret]\n  logveil audit <file|dir...> [--format json|markdown] [--fail-on warning]\n\nDefaults:\n  --redact is enabled by default. Outputs are deterministic and local-only.\n  --fail-on accepts none, info, warning, secret.\n`;
+  return `LogVeil - sanitize agent logs into safe repro bundles\n\nUsage:\n  logveil redact <file|dir...> [--out repro-safe.md] [--json-out evidence.json] [--fail-on secret]\n  logveil redact <file|dir...> --write --out-dir sanitized/\n  logveil audit <file|dir...> [--format json|markdown] [--fail-on warning]\n\nDefaults:\n  --redact is enabled by default. Outputs are deterministic and local-only.\n  --write is required before sanitized file copies are written.\n  --fail-on accepts none, info, warning, secret.\n`;
 }
 
 if (process.argv[1] && realpathSync(process.argv[1]) === fileURLToPath(import.meta.url)) {

@@ -25,6 +25,22 @@ test("CLI returns 2 when fail-on threshold trips", async () => {
   assert.equal(code, 2);
 });
 
+test("CLI writes sanitized copies only with explicit write flag and out dir", async () => {
+  const dir = await mkdtemp(path.join(tmpdir(), "logveil-write-"));
+  const code = await main(["redact", "examples/agent-session.log", "--write", "--out-dir", dir, "--out", path.join(dir, "report.md")]);
+  assert.equal(code, 0);
+
+  const sanitized = await readFile(path.join(dir, "examples", "agent-session.redacted.log"), "utf8");
+  const manifest = JSON.parse(await readFile(path.join(dir, "logveil-write-manifest.json"), "utf8"));
+  assert.match(sanitized, /REDACTED/);
+  assert.equal(manifest.files[0].source, "examples/agent-session.log");
+});
+
+test("CLI rejects write mode without an explicit output directory", async () => {
+  const code = await quietStderrMain(["redact", "examples/agent-session.log", "--write"]);
+  assert.equal(code, 1);
+});
+
 async function quietStderrMain(args: string[]): Promise<number> {
   const stderr = process.stderr.write;
   process.stderr.write = (() => true) as typeof process.stderr.write;
