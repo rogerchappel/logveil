@@ -5,7 +5,7 @@ This recipe turns two checked-in transcript fixtures into a single redacted repr
 ## Run it
 
 ```sh
-npm install
+npm ci
 npm run build
 bash demo/sanitize-chat-export.sh
 ```

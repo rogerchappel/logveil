@@ -1,5 +1,5 @@
 {
-  "name": "logveil",
+  "name": "@rogerchappel/logveil",
   "version": "0.1.0",
   "description": "Local-first sanitizer for agent logs and terminal captures.",
   "type": "module",
@@ -27,8 +27,9 @@
     "check": "tsc -p tsconfig.json --noEmit",
     "test": "node --test --import tsx tests/*.test.ts",
     "smoke": "npm run build && node dist/cli.js --help | grep -q 'LogVeil' && node dist/cli.js --version | grep -q '0.1.0' && node dist/cli.js redact examples/agent-session.log --out /tmp/logveil-smoke.md --json-out /tmp/logveil-smoke.json && node dist/cli.js audit examples/agent-session.log --format json --fail-on none >/tmp/logveil-audit.json",
+    "package:identity": "node scripts/check-package-identity.mjs",
     "package:smoke": "bash scripts/package-smoke.sh",
-    "release:check": "npm test && npm run check && npm run build && npm run smoke && npm run package:smoke"
+    "release:check": "npm run package:identity && npm test && npm run check && npm run build && npm run smoke && npm run package:smoke"
   },
   "keywords": [
     "logs",
@@ -39,6 +40,9 @@
   ],
   "author": "Roger Chappel",
   "license": "MIT",
+  "publishConfig": {
+    "access": "public"
+  },
   "engines": {
     "node": ">=20"
   },

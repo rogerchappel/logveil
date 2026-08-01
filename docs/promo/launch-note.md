@@ -10,7 +10,7 @@ Markdown and JSON outputs for a PR, issue, or incident note.
 ## Demo
 
 ```sh
-npm install
+npm ci
 npm run build
 bash demo/sanitize-repro-bundle.sh
 ```

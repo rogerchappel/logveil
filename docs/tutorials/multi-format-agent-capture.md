@@ -18,7 +18,7 @@ shows masked output without using real private data.
 ## Run it
 
 ```sh
-npm install
+npm ci
 npm run build
 bash demo/multi-format-capture.sh
 ```

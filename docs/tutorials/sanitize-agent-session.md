@@ -6,7 +6,7 @@ an audit report without mutating the source log.
 ## Build
 
 ```sh
-npm install
+npm ci
 npm run build
 ```
 
@@ -36,4 +36,3 @@ before publishing it.
 ```sh
 rm -f repro-safe.md redaction-evidence.json
 ```
-

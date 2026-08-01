@@ -6,7 +6,7 @@ fixture logs that contain secret-severity findings.
 ## Run
 
 ```sh
-npm install
+npm ci
 bash demo/fail-on-gate.sh
 ```
 

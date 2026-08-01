@@ -4,10 +4,26 @@ LogVeil turns agent logs, terminal captures, JSONL transcripts, and chat exports
 
 It is built for the awkward moment after an agent run fails: the log has useful evidence, but it may also contain home paths, API keys, tokens, emails, prompts, or private infrastructure details. LogVeil keeps the workflow local, deterministic, and scriptable.
 
-## Quick start
+## Install
+
+The npm package is scoped to this repository's maintainer. The unscoped
+`logveil` name belongs to an unrelated project, so always include the scope:
 
 ```bash
-npm install
+npm install --global @rogerchappel/logveil
+logveil --help
+```
+
+You can also run the CLI without a global installation:
+
+```bash
+npx --package @rogerchappel/logveil logveil audit ./session.log --format json
+```
+
+## Quick start from source
+
+```bash
+npm ci
 npm run build
 node dist/cli.js redact examples/agent-session.log --out repro-safe.md --json-out evidence.json
 node dist/cli.js audit examples/agent-session.log --format json
@@ -153,6 +169,10 @@ npm run release:check
 npm pack --dry-run
 ```
 
-The package smoke installs the generated tarball into a temporary app, runs the
-installed `logveil` binary, and confirms the packaged examples can produce both
-Markdown and JSON evidence before tagging or publishing.
+The package smoke installs the generated `rogerchappel-logveil-<version>.tgz`
+tarball into a temporary app, imports `@rogerchappel/logveil`, runs the installed
+`logveil` binary, and confirms the packaged examples can produce both Markdown
+and JSON evidence before tagging or publishing. The release check also queries
+the npm registry to ensure the scoped publish target is available or belongs to
+this repository and that install documentation never relies on the unrelated
+unscoped package.

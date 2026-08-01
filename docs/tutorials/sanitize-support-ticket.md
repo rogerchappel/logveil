@@ -6,7 +6,7 @@ Markdown repro bundle plus JSON evidence.
 ## Run it
 
 ```sh
-npm install
+npm ci
 bash demo/sanitize-support-ticket.sh
 ```
 
