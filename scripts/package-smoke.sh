@@ -10,8 +10,8 @@ npm run build >/dev/null
 npm pack --dry-run >/dev/null
 npm pack --pack-destination "$tmp" >/dev/null
 
-package_tgz="$(find "$tmp" -maxdepth 1 -name 'logveil-*.tgz' -print -quit)"
-test -n "$package_tgz"
+package_tgz="$tmp/rogerchappel-logveil-0.1.0.tgz"
+test -s "$package_tgz"
 
 mkdir -p "$tmp/app"
 cd "$tmp/app"
@@ -20,10 +20,13 @@ npm install "$package_tgz" >/dev/null
 
 ./node_modules/.bin/logveil --help >/dev/null
 version_output="$(./node_modules/.bin/logveil --version)"
-grep -q '0.1.0' <<<"$version_output"
-./node_modules/.bin/logveil redact node_modules/logveil/examples/agent-session.log --out "$tmp/repro-safe.md" --json-out "$tmp/evidence.json"
+test "$version_output" = 'logveil 0.1.0'
+node --input-type=module -e "const pkg = await import('@rogerchappel/logveil'); if (typeof pkg.buildBundle !== 'function') process.exit(1)"
+installed_package="node_modules/@rogerchappel/logveil"
+test "$(node -p "require('./$installed_package/package.json').name")" = '@rogerchappel/logveil'
+./node_modules/.bin/logveil redact "$installed_package/examples/agent-session.log" --out "$tmp/repro-safe.md" --json-out "$tmp/evidence.json"
 test -s "$tmp/repro-safe.md"
 node -e "const fs=require('node:fs'); const data=JSON.parse(fs.readFileSync(process.argv[1], 'utf8')); if (!data.summary || typeof data.summary.findings !== 'number' || !Array.isArray(data.files)) process.exit(1);" "$tmp/evidence.json"
-./node_modules/.bin/logveil audit node_modules/logveil/examples/agent-session.log --format json --fail-on none >"$tmp/audit.json"
+./node_modules/.bin/logveil audit "$installed_package/examples/agent-session.log" --format json --fail-on none >"$tmp/audit.json"
 
-echo 'logveil package smoke passed'
+echo '@rogerchappel/logveil package smoke passed'
