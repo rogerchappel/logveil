@@ -14,7 +14,7 @@ details.
 
 ## Tools
 
-- Run `npm install` and `npm run build` from this repository before using the
+- Run `npm ci` and `npm run build` from this repository before using the
   checkout directly.
 - Use `node dist/cli.js` from a checkout, or `logveil` after package install.
 

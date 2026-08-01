@@ -1,5 +1,10 @@
 # Changelog
 
+## Unreleased
+
+- Renamed the npm package to `@rogerchappel/logveil` to avoid the unrelated
+  package using the unscoped `logveil` registry name.
+
 ## 0.1.0
 
 - Initial local-first LogVeil MVP.
