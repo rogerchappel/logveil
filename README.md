@@ -108,6 +108,7 @@ Accepted values: `none`, `info`, `warning`, `secret`.
 - Outputs are deterministic, including a stable `createdAt` timestamp.
 - Raw evidence is masked in reports.
 - Source files are never mutated; LogVeil only writes when `--out` or `--json-out` is provided.
+- Before writing, LogVeil resolves input and report paths and rejects an output that aliases an input or another requested report. A rejected command leaves existing files unchanged.
 - Sanitized copies require `--write --out-dir` and include a
   `logveil-write-manifest.json` manifest.
 

@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 import { realpathSync } from "node:fs";
 import { fileURLToPath } from "node:url";
-import { collectInputs, writeIfRequested, writeSanitizedCopies } from "./io.js";
+import { collectInputs, validateOutputDestinations, writeIfRequested, writeSanitizedCopies } from "./io.js";
 import { buildBundle } from "./scan.js";
 import { gateFailures, parseFailOn } from "./gates.js";
 import { renderJson, renderMarkdown } from "./render.js";
@@ -31,6 +31,11 @@ export async function main(argv = process.argv.slice(2)): Promise<number> {
       return 0;
     }
     if (options.inputs.length === 0) throw new Error("At least one input file or directory is required.");
+
+    await validateOutputDestinations(options.inputs, [
+      { flag: "--out", path: options.out },
+      { flag: "--json-out", path: options.jsonOut }
+    ]);
 
     const inputs = await collectInputs(options.inputs);
     if (inputs.length === 0) throw new Error("No supported input files found.");

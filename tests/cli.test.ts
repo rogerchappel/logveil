@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { mkdtemp, readFile } from "node:fs/promises";
+import { mkdtemp, readFile, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { main } from "../src/cli.js";
@@ -41,11 +41,48 @@ test("CLI rejects write mode without an explicit output directory", async () => 
   assert.equal(code, 1);
 });
 
+test("CLI rejects direct and normalized output aliases without changing the input", async () => {
+  const dir = await mkdtemp(path.join(tmpdir(), "logveil-alias-"));
+  const input = path.join(dir, "session.log");
+  const original = "token=abcdefgh\n";
+  await writeFile(input, original);
+
+  for (const destination of [input, path.join(dir, ".", "nested", "..", "session.log")]) {
+    const { code, stderr } = await captureStderrMain(["redact", input, "--out", destination]);
+    assert.equal(code, 1);
+    assert.match(stderr, /--out destination aliases an input file/);
+    assert.equal(await readFile(input, "utf8"), original);
+  }
+});
+
+test("CLI rejects colliding report destinations without changing an existing report", async () => {
+  const dir = await mkdtemp(path.join(tmpdir(), "logveil-collision-"));
+  const input = path.join(dir, "session.log");
+  const report = path.join(dir, "report.txt");
+  await writeFile(input, "token=abcdefgh\n");
+  await writeFile(report, "keep me\n");
+
+  const { code, stderr } = await captureStderrMain([
+    "redact", input, "--out", report, "--json-out", path.join(dir, ".", "report.txt")
+  ]);
+  assert.equal(code, 1);
+  assert.match(stderr, /--json-out destination collides with --out/);
+  assert.equal(await readFile(report, "utf8"), "keep me\n");
+});
+
 async function quietStderrMain(args: string[]): Promise<number> {
+  return (await captureStderrMain(args)).code;
+}
+
+async function captureStderrMain(args: string[]): Promise<{ code: number; stderr: string }> {
   const stderr = process.stderr.write;
-  process.stderr.write = (() => true) as typeof process.stderr.write;
+  let output = "";
+  process.stderr.write = ((chunk: string | Uint8Array) => {
+    output += chunk.toString();
+    return true;
+  }) as typeof process.stderr.write;
   try {
-    return await main(args);
+    return { code: await main(args), stderr: output };
   } finally {
     process.stderr.write = stderr;
   }
