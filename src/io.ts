@@ -40,6 +40,70 @@ export async function writeIfRequested(destination: string | undefined, content:
   await fs.writeFile(destination, content, "utf8");
 }
 
+export async function validateOutputDestinations(
+  inputPaths: string[],
+  outputs: Array<{ flag: string; path: string | undefined }>
+): Promise<void> {
+  const inputFiles = new Set(await collectCanonicalInputFiles(inputPaths));
+  const destinations = new Map<string, string>();
+
+  for (const output of outputs) {
+    if (!output.path) continue;
+    const canonical = await canonicalizePath(output.path);
+    if (inputFiles.has(canonical)) {
+      throw new Error(`${output.flag} destination aliases an input file: ${output.path}`);
+    }
+    const previous = destinations.get(canonical);
+    if (previous) {
+      throw new Error(`${output.flag} destination collides with ${previous}: ${output.path}`);
+    }
+    destinations.set(canonical, output.flag);
+  }
+}
+
+async function collectCanonicalInputFiles(requestedPaths: string[]): Promise<string[]> {
+  const files: string[] = [];
+  for (const requestedPath of requestedPaths) {
+    const absolute = path.resolve(requestedPath);
+    const stat = await fs.stat(absolute);
+    if (stat.isDirectory()) files.push(...(await collectCanonicalDirectoryFiles(absolute)));
+    else if (stat.isFile()) files.push(await fs.realpath(absolute));
+  }
+  return files;
+}
+
+async function collectCanonicalDirectoryFiles(directory: string): Promise<string[]> {
+  const entries = await fs.readdir(directory, { withFileTypes: true });
+  const files: string[] = [];
+  for (const entry of entries) {
+    if (entry.name === "node_modules" || entry.name === ".git" || entry.name === "dist") continue;
+    const absolute = path.join(directory, entry.name);
+    if (entry.isDirectory()) files.push(...(await collectCanonicalDirectoryFiles(absolute)));
+    if (entry.isFile() && SUPPORTED.has(path.extname(entry.name).toLowerCase())) files.push(await fs.realpath(absolute));
+  }
+  return files;
+}
+
+async function canonicalizePath(requestedPath: string): Promise<string> {
+  let existing = path.resolve(requestedPath);
+  const missing: string[] = [];
+  while (true) {
+    try {
+      return path.join(await fs.realpath(existing), ...missing.reverse());
+    } catch (error) {
+      if (!isMissingPath(error)) throw error;
+      const parent = path.dirname(existing);
+      if (parent === existing) throw error;
+      missing.push(path.basename(existing));
+      existing = parent;
+    }
+  }
+}
+
+function isMissingPath(error: unknown): error is NodeJS.ErrnoException {
+  return error instanceof Error && "code" in error && (error as NodeJS.ErrnoException).code === "ENOENT";
+}
+
 export interface SanitizedWrite {
   source: string;
   destination: string;
