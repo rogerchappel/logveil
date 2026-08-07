@@ -9,6 +9,8 @@ on:
       - package-lock.json
       - scripts/check-package-identity.mjs
       - scripts/package-smoke.sh
+      - scripts/release.mjs
+      - tests/release.test.ts
       - .github/workflows/release*.yml
 
 permissions:
@@ -41,6 +43,8 @@ jobs:
         run: node /tmp/releasebox/bin/releasebox.js check .
       - name: Run release checks
         run: npm run release:check
+      - name: Exercise release driver
+        run: RELEASE_TAG="v$(node -p "require('./package.json').version")" node scripts/release.mjs --dry-run
       - name: Release notes preview
         run: |
           node /tmp/releasebox/bin/releasebox.js notes . > release-notes-preview.md

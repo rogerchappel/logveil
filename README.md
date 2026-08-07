@@ -177,3 +177,10 @@ and JSON evidence before tagging or publishing. The release check also queries
 the npm registry to ensure the scoped publish target is available or belongs to
 this repository and that install documentation never relies on the unrelated
 unscoped package.
+
+Tagged releases run `scripts/release.mjs`, which requires the Git tag to equal
+`v<package.json version>`. The driver parses exactly one `npm pack --json`
+result, publishes that exact tarball with provenance, and attaches the same
+file to the GitHub release only after npm publication succeeds. Pull requests
+exercise these artifact and version gates with the driver's non-publishing dry
+run.
