@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { chmod, mkdtemp, readFile, writeFile } from "node:fs/promises";
+import { chmod, mkdtemp, readFile, unlink, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { spawnSync } from "node:child_process";
@@ -39,6 +39,7 @@ printf 'gh %s\\n' "$*" >> "$COMMAND_LOG"
       RELEASEBOX_CLI: releasebox,
     },
   });
+  await unlink(path.join(root, "RELEASE_NOTES.md")).catch(() => undefined);
   const commands = await readFile(log, "utf8").catch(() => "");
   return { ...result, commands };
 }
