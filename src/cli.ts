@@ -104,7 +104,7 @@ function parseFormat(value: string): OutputFormat {
 }
 
 function helpText(): string {
-  return `LogVeil - sanitize agent logs into safe repro bundles\n\nUsage:\n  logveil redact <file|dir...> [--out repro-safe.md] [--json-out evidence.json] [--fail-on secret]\n  logveil redact <file|dir...> --write --out-dir sanitized/\n  logveil audit <file|dir...> [--format json|markdown] [--fail-on warning]\n\nDefaults:\n  --redact is enabled by default. Outputs are deterministic and local-only.\n  --write is required before sanitized file copies are written.\n  --fail-on accepts none, info, warning, secret.\n`;
+  return `LogVeil - sanitize agent logs into safe repro bundles\n\nUsage:\n  logveil redact <file|dir...> [--out repro-safe.md] [--json-out evidence.json] [--fail-on secret]\n  logveil redact <file|dir...> --write --out-dir sanitized/\n  logveil audit <file|dir...> [--format json|markdown] [--fail-on warning]\n\nDefaults:\n  --redact is enabled by default. Outputs are deterministic and local-only.\n  --write is required before sanitized file copies are written.\n  Report and sanitized-copy destinations must be outside directory inputs.\n  --fail-on accepts none, info, warning, secret.\n`;
 }
 
 if (process.argv[1] && realpathSync(process.argv[1]) === fileURLToPath(import.meta.url)) {
