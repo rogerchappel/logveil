@@ -70,6 +70,38 @@ test("CLI rejects colliding report destinations without changing an existing rep
   assert.equal(await readFile(report, "utf8"), "keep me\n");
 });
 
+test("CLI rejects an output directory inside a directory input on first and repeated runs", async () => {
+  const inputDir = await mkdtemp(path.join(tmpdir(), "logveil-overlap-"));
+  const input = path.join(inputDir, "session.log");
+  const outDir = path.join(inputDir, "sanitized");
+  await writeFile(input, "token=abcdefgh\n");
+
+  for (let attempt = 0; attempt < 2; attempt += 1) {
+    const { code, stderr } = await captureStderrMain([
+      "redact", inputDir, "--write", "--out-dir", outDir
+    ]);
+    assert.equal(code, 1);
+    assert.match(stderr, /--out-dir destination must be outside directory input/);
+    await assert.rejects(readFile(path.join(outDir, "logveil-write-manifest.json"), "utf8"), /ENOENT/);
+  }
+});
+
+test("CLI rejects report outputs inside a directory input before they can be re-ingested", async () => {
+  const inputDir = await mkdtemp(path.join(tmpdir(), "logveil-report-overlap-"));
+  const input = path.join(inputDir, "session.log");
+  await writeFile(input, "token=abcdefgh\n");
+
+  for (const [flag, destination] of [
+    ["--out", path.join(inputDir, "report.md")],
+    ["--json-out", path.join(inputDir, "evidence.json")]
+  ] as const) {
+    const { code, stderr } = await captureStderrMain(["redact", inputDir, flag, destination]);
+    assert.equal(code, 1);
+    assert.match(stderr, new RegExp(`${flag} destination must be outside directory input`));
+    await assert.rejects(readFile(destination, "utf8"), /ENOENT/);
+  }
+});
+
 async function quietStderrMain(args: string[]): Promise<number> {
   return (await captureStderrMain(args)).code;
 }
