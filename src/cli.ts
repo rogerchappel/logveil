@@ -34,7 +34,8 @@ export async function main(argv = process.argv.slice(2)): Promise<number> {
 
     await validateOutputDestinations(options.inputs, [
       { flag: "--out", path: options.out },
-      { flag: "--json-out", path: options.jsonOut }
+      { flag: "--json-out", path: options.jsonOut },
+      { flag: "--out-dir", path: options.write ? options.outDir : undefined }
     ]);
 
     const inputs = await collectInputs(options.inputs);
