@@ -68,7 +68,7 @@ logveil redact ./logs --out repro-safe.md --json-out redaction-evidence.json
 ```
 
 To create sanitized file copies, opt in explicitly with `--write` and choose an
-artifact directory. Source files are not modified.
+artifact directory outside every directory input. Source files are not modified.
 
 ```bash
 logveil redact ./logs --write --out-dir sanitized --out repro-safe.md
@@ -108,7 +108,11 @@ Accepted values: `none`, `info`, `warning`, `secret`.
 - Outputs are deterministic, including a stable `createdAt` timestamp.
 - Raw evidence is masked in reports.
 - Source files are never mutated; LogVeil only writes when `--out` or `--json-out` is provided.
-- Before writing, LogVeil resolves input and report paths and rejects an output that aliases an input or another requested report. A rejected command leaves existing files unchanged.
+- Before writing, LogVeil resolves input and output paths. Report files and the
+  `--out-dir` must be outside every directory input, preventing reports,
+  manifests, and previously redacted copies from being collected on a later
+  run. LogVeil also rejects outputs that alias a file input or another requested
+  output. A rejected command leaves existing files unchanged.
 - Sanitized copies require `--write --out-dir` and include a
   `logveil-write-manifest.json` manifest.
 
