@@ -6,27 +6,30 @@ It is built for the awkward moment after an agent run fails: the log has useful 
 
 ## Install
 
-The npm package is scoped to this repository's maintainer. The unscoped
-`logveil` name belongs to an unrelated project, so always include the scope:
-
-```bash
-npm install --global @rogerchappel/logveil
-logveil --help
-```
-
-You can also run the CLI without a global installation:
-
-```bash
-npx --package @rogerchappel/logveil logveil audit ./session.log --format json
-```
+`@rogerchappel/logveil` is not published to the npm registry yet. Registry
+installation and `npx` are therefore unavailable until the first release.
 
 ## Quick start from source
 
 ```bash
+git clone https://github.com/rogerchappel/logveil.git
+cd logveil
 npm ci
 npm run build
 node dist/cli.js redact examples/agent-session.log --out repro-safe.md --json-out evidence.json
 node dist/cli.js audit examples/agent-session.log --format json
+```
+
+To test the installable package from a checkout before publication, build a
+tarball and install it in a disposable directory:
+
+```bash
+npm run build
+npm pack --pack-destination /tmp
+mkdir /tmp/logveil-example && cd /tmp/logveil-example
+npm init --yes
+npm install /tmp/rogerchappel-logveil-0.1.0.tgz
+./node_modules/.bin/logveil --help
 ```
 
 For a fuller fixture-backed walkthrough, see
@@ -49,11 +52,11 @@ bash demo/sanitize-support-ticket.sh
 The support-ticket demo uses a synthetic incident fixture and is documented in
 [docs/tutorials/sanitize-support-ticket.md](docs/tutorials/sanitize-support-ticket.md).
 
-After package installation, use the binary directly:
+After installing the local tarball, use the project-local binary directly:
 
 ```bash
-logveil redact ./session.log --out repro-safe.md
-logveil audit ./session.log --format json --fail-on secret
+./node_modules/.bin/logveil redact ./session.log --out repro-safe.md
+./node_modules/.bin/logveil audit ./session.log --format json --fail-on secret
 ```
 
 ## Commands

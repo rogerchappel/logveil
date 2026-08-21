@@ -42,6 +42,13 @@ if (unsafeCommands.length > 0) {
   throw new Error(`unscoped npm install/npx command(s) found:\n${unsafeCommands.join("\n")}`);
 }
 
+const registryCommands = await findRegistryInstallCommands(new URL("../", import.meta.url));
+if (!chosen && registryCommands.length > 0) {
+  throw new Error(
+    `${expectedName} is unpublished but is described as registry-installable:\n${registryCommands.join("\n")}`,
+  );
+}
+
 async function registryMetadata(name) {
   const response = await fetch(new URL(encodeURIComponent(name), registry), {
     headers: { accept: "application/vnd.npm.install-v1+json" },
@@ -64,7 +71,22 @@ async function findUnsafeInstallCommands(root) {
     content.split("\n").forEach((line, index) => {
       const command = line.trim();
       const mentionsInstall = /^(npm\s+(?:i|install|exec)|npx)\b/.test(command);
-      if (mentionsInstall && /\blogveil\b/.test(command) && !command.includes(expectedName)) {
+      const installsLocalTarball = /(?:^|\s)(?:\.?\.?\/|\/).*\.tgz(?:\s|$)/.test(command);
+      if (mentionsInstall && /\blogveil\b/.test(command) && !command.includes(expectedName) && !installsLocalTarball) {
+        results.push(`${file.pathname}:${index + 1}: ${command}`);
+      }
+    });
+  }
+  return results;
+}
+
+async function findRegistryInstallCommands(root) {
+  const results = [];
+  for (const file of await markdownFiles(root)) {
+    const content = await readFile(file, "utf8");
+    content.split("\n").forEach((line, index) => {
+      const command = line.trim();
+      if (/^(?:npm\s+(?:i|install|exec)|npx)\b/.test(command) && command.includes(expectedName)) {
         results.push(`${file.pathname}:${index + 1}: ${command}`);
       }
     });
