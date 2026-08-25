@@ -6,6 +6,7 @@ import { buildBundle } from "./scan.js";
 import { gateFailures, parseFailOn } from "./gates.js";
 import { renderJson, renderMarkdown } from "./render.js";
 import type { OutputFormat } from "./types.js";
+import { PACKAGE_VERSION } from "./version.js";
 
 interface CliOptions {
   command: "redact" | "audit" | "help" | "version";
@@ -27,7 +28,7 @@ export async function main(argv = process.argv.slice(2)): Promise<number> {
       return 0;
     }
     if (options.command === "version") {
-      process.stdout.write("logveil 0.1.0\n");
+      process.stdout.write(`logveil ${PACKAGE_VERSION}\n`);
       return 0;
     }
     if (options.inputs.length === 0) throw new Error("At least one input file or directory is required.");
