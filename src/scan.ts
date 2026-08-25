@@ -1,4 +1,5 @@
 import { createHash } from "node:crypto";
+import { PACKAGE_VERSION } from "./version.js";
 import type { BundleFile, Finding, InputDocument, RedactionRule, ReproBundle } from "./types.js";
 import { defaultRules } from "./rules.js";
 
@@ -98,7 +99,7 @@ export function buildBundle(inputs: InputDocument[], options: ScanOptions = {}):
   const files = inputs.map((input) => scanDocument(input, options));
   const all = files.flatMap((file) => file.findings);
   return {
-    generatedBy: "logveil@0.1.0",
+    generatedBy: `logveil@${PACKAGE_VERSION}`,
     schemaVersion: 1,
     createdAt: options.createdAt ?? STABLE_CREATED_AT,
     redactionEnabled: options.redact ?? true,
