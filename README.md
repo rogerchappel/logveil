@@ -28,7 +28,7 @@ npm run build
 npm pack --pack-destination /tmp
 mkdir /tmp/logveil-example && cd /tmp/logveil-example
 npm init --yes
-npm install /tmp/rogerchappel-logveil-0.1.0.tgz
+npm install /tmp/rogerchappel-logveil-$(node -p "require('./package.json').version").tgz
 ./node_modules/.bin/logveil --help
 ```
 
