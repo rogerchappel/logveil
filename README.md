@@ -25,11 +25,15 @@ tarball and install it in a disposable directory:
 
 ```bash
 npm run build
+package_version="$(node -p "require('./package.json').version")"
+package_tgz="/tmp/rogerchappel-logveil-${package_version}.tgz"
 npm pack --pack-destination /tmp
-mkdir /tmp/logveil-example && cd /tmp/logveil-example
+consumer_dir="$(mktemp -d /tmp/logveil-example.XXXXXX)"
+cd "$consumer_dir"
 npm init --yes
-npm install /tmp/rogerchappel-logveil-$(node -p "require('./package.json').version").tgz
+npm install "$package_tgz"
 ./node_modules/.bin/logveil --help
+rm -rf "$consumer_dir" "$package_tgz"
 ```
 
 For a fuller fixture-backed walkthrough, see
