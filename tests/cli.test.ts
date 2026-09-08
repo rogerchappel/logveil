@@ -36,6 +36,53 @@ test("CLI writes sanitized copies only with explicit write flag and out dir", as
   assert.equal(manifest.files[0].source, "examples/agent-session.log");
 });
 
+test("CLI rejects report destinations that collide with planned write outputs", async () => {
+  const dir = await mkdtemp(path.join(tmpdir(), "logveil-planned-collision-"));
+  const input = path.join(dir, "probe", "input.log");
+  const outDir = path.join(dir, "output");
+  const copy = plannedCopyPath(outDir, input);
+  const manifest = path.join(outDir, "logveil-write-manifest.json");
+  await mkdir(path.dirname(input), { recursive: true });
+  await writeFile(input, "email=user@example.com\n");
+
+  for (const [flag, destination] of [
+    ["--out", copy],
+    ["--json-out", copy],
+    ["--out", manifest]
+  ] as const) {
+    const { code, stderr } = await captureStderrMain([
+      "redact", input, "--write", "--out-dir", outDir, flag, destination
+    ]);
+    assert.equal(code, 1);
+    assert.match(stderr, /destination collides with/);
+    await assert.rejects(readFile(copy, "utf8"), /ENOENT/);
+    await assert.rejects(readFile(manifest, "utf8"), /ENOENT/);
+  }
+});
+
+test("CLI normalizes planned output aliases and permits a non-colliding same-root layout", async () => {
+  const dir = await mkdtemp(path.join(tmpdir(), "logveil-planned-alias-"));
+  const input = path.join(dir, "input.log");
+  const outDir = path.join(dir, "output");
+  const copy = plannedCopyPath(outDir, input);
+  await writeFile(input, "email=user@example.com\n");
+
+  const alias = path.join(path.dirname(copy), ".", "nested", "..", path.basename(copy));
+  const rejected = await captureStderrMain([
+    "redact", input, "--write", "--out-dir", outDir, "--out", alias
+  ]);
+  assert.equal(rejected.code, 1);
+  assert.match(rejected.stderr, /destination collides with/);
+  await assert.rejects(readFile(copy, "utf8"), /ENOENT/);
+
+  const report = path.join(outDir, "reports", "report.md");
+  const code = await main(["redact", input, "--write", "--out-dir", outDir, "--out", report]);
+  assert.equal(code, 0);
+  assert.match(await readFile(report, "utf8"), /REDACTED/);
+  assert.match(await readFile(copy, "utf8"), /REDACTED/);
+  assert.ok(JSON.parse(await readFile(path.join(outDir, "logveil-write-manifest.json"), "utf8")));
+});
+
 test("CLI rejects sanitized destination collisions before writing copies", async () => {
   const sharedName = `logveil-shared-${process.pid}-${Date.now()}`;
   const inside = path.join(process.cwd(), sharedName);
@@ -142,6 +189,12 @@ test("CLI rejects report outputs inside a directory input before they can be re-
 
 async function quietStderrMain(args: string[]): Promise<number> {
   return (await captureStderrMain(args)).code;
+}
+
+function plannedCopyPath(outDir: string, input: string): string {
+  const relative = path.relative(process.cwd(), input).split(path.sep).filter((part) => part && part !== "..");
+  relative[relative.length - 1] = relative.at(-1)!.replace(/\.log$/, ".redacted.log");
+  return path.join(outDir, ...relative);
 }
 
 async function captureStderrMain(args: string[]): Promise<{ code: number; stderr: string }> {
