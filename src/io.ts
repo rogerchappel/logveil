@@ -102,11 +102,28 @@ export interface SanitizedWrite {
   sha256: string;
 }
 
-export async function writeSanitizedCopies(bundle: ReproBundle, outDir: string): Promise<SanitizedWrite[]> {
+export function planSanitizedDestinations(bundle: ReproBundle, outDir: string): Array<{ flag: string; path: string }> {
   const root = path.resolve(outDir);
+  const copies = bundle.files.map((file) => ({
+      flag: `sanitized copy for ${file.path}`,
+      path: path.join(root, redactedPath(file.path))
+    }));
+  const sources = new Map<string, string>();
+  for (const copy of copies) {
+    const previous = sources.get(copy.path);
+    if (previous) throw new Error(`sanitized destination collision for ${copy.path}: ${previous} and ${copy.flag.slice("sanitized copy for ".length)}`);
+    sources.set(copy.path, copy.flag.slice("sanitized copy for ".length));
+  }
+  return [
+    ...copies,
+    { flag: "write manifest", path: path.join(root, "logveil-write-manifest.json") }
+  ];
+}
+
+export async function writeSanitizedCopies(bundle: ReproBundle, outDir: string): Promise<SanitizedWrite[]> {
   const planned = bundle.files.map((file) => ({
     file,
-    destination: path.join(root, redactedPath(file.path))
+    destination: path.join(path.resolve(outDir), redactedPath(file.path))
   }));
   const destinations = new Map<string, string>();
 
@@ -132,7 +149,7 @@ export async function writeSanitizedCopies(bundle: ReproBundle, outDir: string):
   }
 
   await fs.writeFile(
-    path.join(root, "logveil-write-manifest.json"),
+    path.join(path.resolve(outDir), "logveil-write-manifest.json"),
     `${JSON.stringify({ generatedBy: bundle.generatedBy, files: writes }, null, 2)}\n`,
     "utf8"
   );
