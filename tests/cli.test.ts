@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { mkdtemp, readFile, writeFile } from "node:fs/promises";
+import { mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { main } from "../src/cli.js";
@@ -34,6 +34,44 @@ test("CLI writes sanitized copies only with explicit write flag and out dir", as
   const manifest = JSON.parse(await readFile(path.join(dir, "logveil-write-manifest.json"), "utf8"));
   assert.match(sanitized, /REDACTED/);
   assert.equal(manifest.files[0].source, "examples/agent-session.log");
+});
+
+test("CLI rejects sanitized destination collisions before writing copies", async () => {
+  const sharedName = `logveil-shared-${process.pid}-${Date.now()}`;
+  const inside = path.join(process.cwd(), sharedName);
+  const outside = path.join(process.cwd(), "..", sharedName);
+  const outDir = await mkdtemp(path.join(tmpdir(), "logveil-write-collision-"));
+  await mkdir(inside);
+  await mkdir(outside);
+  await writeFile(path.join(inside, "sample.log"), "email=inside@example.com\n");
+  await writeFile(path.join(outside, "sample.log"), "token=abcdefgh\n");
+
+  try {
+    const { code, stderr } = await captureStderrMain([
+      "redact", `${sharedName}/sample.log`, `../${sharedName}/sample.log`, "--write", "--out-dir", outDir
+    ]);
+    assert.equal(code, 1);
+    assert.match(stderr, /sanitized destination collision/);
+    await assert.rejects(readFile(path.join(outDir, sharedName, "sample.redacted.log"), "utf8"), /ENOENT/);
+    await assert.rejects(readFile(path.join(outDir, "logveil-write-manifest.json"), "utf8"), /ENOENT/);
+  } finally {
+    await rm(inside, { recursive: true });
+    await rm(outside, { recursive: true });
+  }
+});
+
+test("CLI rejects collecting the same source through overlapping inputs", async () => {
+  const inputDir = await mkdtemp(path.join(tmpdir(), "logveil-duplicate-input-"));
+  const input = path.join(inputDir, "sample.log");
+  const outDir = await mkdtemp(path.join(tmpdir(), "logveil-duplicate-output-"));
+  await writeFile(input, "token=abcdefgh\n");
+
+  const { code, stderr } = await captureStderrMain([
+    "redact", inputDir, input, "--write", "--out-dir", outDir
+  ]);
+  assert.equal(code, 1);
+  assert.match(stderr, /sanitized destination collision/);
+  await assert.rejects(readFile(path.join(outDir, "logveil-write-manifest.json"), "utf8"), /ENOENT/);
 });
 
 test("CLI rejects write mode without an explicit output directory", async () => {
