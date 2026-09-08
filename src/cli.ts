@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 import { realpathSync } from "node:fs";
 import { fileURLToPath } from "node:url";
-import { collectInputs, validateOutputDestinations, writeIfRequested, writeSanitizedCopies } from "./io.js";
+import { collectInputs, planSanitizedDestinations, validateOutputDestinations, writeIfRequested, writeSanitizedCopies } from "./io.js";
 import { buildBundle } from "./scan.js";
 import { gateFailures, parseFailOn } from "./gates.js";
 import { renderJson, renderMarkdown } from "./render.js";
@@ -42,6 +42,14 @@ export async function main(argv = process.argv.slice(2)): Promise<number> {
     const inputs = await collectInputs(options.inputs);
     if (inputs.length === 0) throw new Error("No supported input files found.");
     const bundle = buildBundle(inputs, { redact: options.redact });
+    if (options.write && options.outDir) {
+      await validateOutputDestinations(options.inputs, [
+        { flag: "--out", path: options.out },
+        { flag: "--json-out", path: options.jsonOut },
+        { flag: "--out-dir", path: options.outDir },
+        ...planSanitizedDestinations(bundle, options.outDir)
+      ]);
+    }
     const output = options.format === "json" ? renderJson(bundle) : renderMarkdown(bundle);
 
     await writeIfRequested(options.out, output);
