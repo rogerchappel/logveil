@@ -121,8 +121,11 @@ Accepted values: `none`, `info`, `warning`, `secret`.
   run. LogVeil also rejects outputs that alias a file input or another requested
   output. A rejected command leaves existing files unchanged.
 - Sanitized copies require `--write --out-dir` and include a
-  `logveil-write-manifest.json` manifest. Before writing any copy, LogVeil
-  verifies that every collected source maps to a unique destination. Inputs
+  `logveil-write-manifest.json` manifest. Before writing any output, LogVeil
+  plans the report, JSON report, sanitized-copy, and manifest destinations and
+  rejects collisions between them, including normalized path aliases. Reports
+  may share the output root when their paths remain distinct. LogVeil also
+  verifies that every collected source maps to a unique copy destination. Inputs
   such as `shared/sample.log` and `../shared/sample.log`, or overlapping
   directory and file arguments that collect one source twice, are rejected
   instead of overwriting a copy or creating duplicate manifest destinations.
