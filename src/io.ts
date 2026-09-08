@@ -104,10 +104,23 @@ export interface SanitizedWrite {
 
 export async function writeSanitizedCopies(bundle: ReproBundle, outDir: string): Promise<SanitizedWrite[]> {
   const root = path.resolve(outDir);
+  const planned = bundle.files.map((file) => ({
+    file,
+    destination: path.join(root, redactedPath(file.path))
+  }));
+  const destinations = new Map<string, string>();
+
+  for (const { file, destination } of planned) {
+    const previous = destinations.get(destination);
+    if (previous) {
+      throw new Error(`sanitized destination collision for ${destination}: ${previous} and ${file.path}`);
+    }
+    destinations.set(destination, file.path);
+  }
+
   const writes: SanitizedWrite[] = [];
 
-  for (const file of bundle.files) {
-    const destination = path.join(root, redactedPath(file.path));
+  for (const { file, destination } of planned) {
     await fs.mkdir(path.dirname(destination), { recursive: true });
     await fs.writeFile(destination, file.sanitized, "utf8");
     writes.push({
