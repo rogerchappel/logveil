@@ -196,6 +196,30 @@ the npm registry to ensure the scoped publish target is available or belongs to
 this repository and that install documentation never relies on the unrelated
 unscoped package.
 
+### Maintainer pre-release checklist
+
+Before preparing a release, verify each item from the repository root:
+
+1. Confirm `package.json` has the intended version and that the working tree is
+   clean (`git status --short`). A release tag must be exactly
+   `v<package.json version>`.
+2. Run `npm ci`, `npm run release:check`, and `npm pack --dry-run`. The release
+   check validates package identity, tests, types, build, CLI smoke, tarball
+   installation, and version/tag handling without publishing.
+3. Confirm the published state directly from npm, not from the local package
+   version:
+
+   ```sh
+   npm view @rogerchappel/logveil version
+   ```
+
+   A successful response means a version is present in the registry; compare it
+   with the intended version and the repository's release record. A not-found
+   response means the package is not published. Until then, registry install
+   and `npx` usage remain unavailable.
+4. Review the release workflow and changelog, then have a maintainer explicitly
+   authorize the release. Do not treat these checks as permission to publish.
+
 Tagged releases run `scripts/release.mjs`, which requires the Git tag to equal
 `v<package.json version>`. The driver parses exactly one `npm pack --json`
 result, publishes that exact tarball with provenance, and attaches the same
