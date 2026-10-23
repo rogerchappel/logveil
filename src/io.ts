@@ -106,8 +106,13 @@ export function planSanitizedDestinations(bundle: ReproBundle, outDir: string): 
   const root = path.resolve(outDir);
   const copies = bundle.files.map((file) => ({
       flag: `sanitized copy for ${file.path}`,
-      path: path.join(root, redactedPath(file.path))
+      path: path.resolve(root, redactedPath(file.path))
     }));
+  for (const copy of copies) {
+    if (!isWithin(root, copy.path) || copy.path === root) {
+      throw new Error(`${copy.flag} destination must remain inside output directory: ${copy.path}`);
+    }
+  }
   const sources = new Map<string, string>();
   for (const copy of copies) {
     const previous = sources.get(copy.path);
@@ -121,10 +126,16 @@ export function planSanitizedDestinations(bundle: ReproBundle, outDir: string): 
 }
 
 export async function writeSanitizedCopies(bundle: ReproBundle, outDir: string): Promise<SanitizedWrite[]> {
+  const root = path.resolve(outDir);
   const planned = bundle.files.map((file) => ({
     file,
-    destination: path.join(path.resolve(outDir), redactedPath(file.path))
+    destination: path.resolve(root, redactedPath(file.path))
   }));
+  for (const { file, destination } of planned) {
+    if (!isWithin(root, destination) || destination === root) {
+      throw new Error(`sanitized copy for ${file.path} destination must remain inside output directory: ${destination}`);
+    }
+  }
   const destinations = new Map<string, string>();
 
   for (const { file, destination } of planned) {

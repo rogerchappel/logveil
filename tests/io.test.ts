@@ -3,7 +3,8 @@ import os from "node:os";
 import path from "node:path";
 import { afterEach, beforeEach, test } from "node:test";
 import assert from "node:assert/strict";
-import { collectInputs, validateOutputDestinations } from "../src/io.js";
+import { collectInputs, planSanitizedDestinations, validateOutputDestinations, writeSanitizedCopies } from "../src/io.js";
+import type { ReproBundle } from "../src/types.js";
 
 let root: string;
 
@@ -23,6 +24,33 @@ async function makeDirectorySymlink(target: string, link: string): Promise<boole
     throw error;
   }
 }
+
+function bundleWithPaths(...paths: string[]): ReproBundle {
+  return {
+    generatedBy: "test", schemaVersion: 1, createdAt: "2026-01-01T00:00:00Z", redactionEnabled: true,
+    summary: { files: paths.length, findings: 0, secrets: 0, warnings: 0, info: 0 },
+    files: paths.map((filePath) => ({ path: filePath, originalBytes: 4, sanitizedBytes: 4, sha256: "test", sanitized: "safe", findings: [] }))
+  };
+}
+
+test("sanitized copy planning and writing keep every destination inside outDir", async () => {
+  const outDir = path.join(root, "output");
+  const filePaths = ["nested/record.log", "../outside.log", "../../../../escape.txt", "/absolute/record.json", ".."];
+  const bundle = bundleWithPaths(...filePaths);
+  const planned = planSanitizedDestinations(bundle, outDir);
+  const writes = await writeSanitizedCopies(bundle, outDir);
+  const rootPath = path.resolve(outDir);
+
+  assert.equal(planned.length, filePaths.length + 1);
+  for (const item of [...planned, ...writes.map((write) => ({ path: path.resolve(write.destination) }))]) {
+    const destination = path.resolve(item.path);
+    const relative = path.relative(rootPath, destination);
+    assert.notEqual(destination, rootPath);
+    assert.ok(relative !== ".." && !relative.startsWith(`..${path.sep}`) && !path.isAbsolute(relative), `${destination} escaped ${rootPath}`);
+  }
+  assert.equal(await fs.readFile(path.join(outDir, "outside.redacted.log"), "utf8"), "safe");
+  await assert.rejects(fs.access(path.join(root, "outside.redacted.log")));
+});
 
 test("collectInputs follows a symlink supplied as the root input", async (t) => {
   const actual = path.join(root, "actual");
